@@ -1000,7 +1000,6 @@
   /* Checkout modal */
   const checkoutModal = document.getElementById('checkoutModal');
   const closeCheckout = document.getElementById('closeCheckout');
-  const checkoutBtn = document.getElementById('checkoutBtn');
   const checkoutForm = document.getElementById('checkoutForm');
   const checkoutSuccess = document.getElementById('checkoutSuccess');
   const checkoutError = document.getElementById('checkoutError');
@@ -1128,6 +1127,9 @@
   if (dismissWelcome && welcomeOverlay) {
     dismissWelcome.addEventListener('click', () => {
       welcomeOverlay.classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Fully remove from flow after fade so it cannot block interactions
+      setTimeout(() => { welcomeOverlay.style.display = 'none'; }, 450);
     });
   }
 
@@ -1143,14 +1145,7 @@
   }
 
   /* Reveal on scroll */
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
 </script>
 
 </body>
