@@ -346,6 +346,83 @@
   .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s ease, transform 0.7s ease; }
   .reveal.visible { opacity: 1; transform: none; }
 
+  /* Welcome overlay */
+  .welcome-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(49,86,64,0.45); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 1; transition: opacity 0.4s ease;
+  }
+  .welcome-overlay.hidden { opacity: 0; pointer-events: none; }
+  .welcome-card {
+    text-align: center; background: #fff; padding: 40px 32px;
+    border-radius: 32px; border: 1px solid var(--line);
+    max-width: 440px; width: 92%;
+    animation: welcomePop 0.7s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .welcome-puppy { font-size: 88px; margin-bottom: 14px; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.12)); }
+  .welcome-dismiss { background: var(--green); color: #fff; }
+  .welcome-dismiss:hover { background: var(--orange); }
+
+  /* Puppy mascot */
+  .puppy-mascot {
+    position: fixed; bottom: 28px; right: 28px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--green); color: #fff; border: none;
+    font-size: 30px; cursor: pointer; box-shadow: var(--shadow);
+    z-index: 150; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .puppy-mascot:hover { background: var(--orange); transform: scale(1.1); }
+  .mascot-tip {
+    position: fixed; bottom: 106px; right: 28px;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 16px; font-size: 0.9rem; color: var(--ink);
+    max-width: 250px; box-shadow: var(--shadow);
+    opacity: 0; pointer-events: none; transform: translateY(10px);
+    transition: opacity 0.25s, transform 0.25s; z-index: 150;
+  }
+  .mascot-tip.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+  /* Add to Cart celebration */
+  .celebration {
+    position: fixed; inset: 0; z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .celebration-card { text-align: center; animation: jumpCelebrate 2s ease-out; }
+  .celebration-dog { font-size: 130px; filter: drop-shadow(0 14px 20px rgba(0,0,0,0.15)); display: inline-block; }
+  .celebration-msg { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.7rem; color: var(--green); margin-top: 10px; }
+  .celebration-paw {
+    position: absolute; animation: floatUp 2s ease-out forwards;
+  }
+  @keyframes welcomePop {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes jumpCelebrate {
+    0% { opacity: 0; transform: translateY(0) scale(1); }
+    20% { opacity: 1; transform: translateY(-45px) scale(1.1); }
+    40% { transform: translateY(0) scale(1); }
+    60% { transform: translateY(-22px) scale(1.05); }
+    80% { transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(0); }
+  }
+  @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-70px) scale(0); opacity: 0; } }
+
+  @media (max-width: 899px) {
+    .puppy-mascot { width: 44px; height: 44px; font-size: 22px; bottom: 20px; right: 20px; }
+    .mascot-tip { bottom: 86px; right: 16px; left: 16px; max-width: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .welcome-card { animation: none; }
+    .welcome-overlay { transition: none; }
+    .puppy-mascot { transition: none; }
+    .mascot-tip { transition: none; }
+    .celebration-card { animation: none; }
+    .celebration-paw { animation: none; }
+  }
+
   @media (max-width: 899px) {
     .hero-grid { grid-template-columns: 1fr; }
     .hero-visual { order: -1; height: 420px; }
@@ -360,6 +437,13 @@
 </style>
 </head>
 <body>
+<div id="welcomeOverlay" class="welcome-overlay">
+  <div class="welcome-card">
+    <div class="welcome-puppy">🐶</div>
+    <h2 style="margin:0 0 8px;font-size:1.7rem;color:var(--green);">Hey human! Welcome to SniffScape 🐾</h2>
+    <button class="btn welcome-dismiss" id="dismissWelcome">Let's Explore</button>
+  </div>
+</div>
 
 <header>
   <div class="container nav">
@@ -544,6 +628,15 @@
   <div class="copy">© 2026 SniffScape. Designed for curious pups.</div>
 </footer>
 
+<button id="puppyMascot" class="puppy-mascot" aria-label="Puppy tip" aria-expanded="false">🐶</button>
+<div id="mascotTip" class="mascot-tip" role="tooltip">Tip: Hide treats under the stations to keep your pup sniffing longer!</div>
+<div id="celebration" class="celebration" aria-live="polite">
+  <div class="celebration-card">
+    <div class="celebration-dog">🐶</div>
+    <div class="celebration-msg">Woof! Great choice!</div>
+  </div>
+</div>
+
 <script>
   /* Mobile menu */
   const toggle = document.getElementById('navToggle');
@@ -587,14 +680,58 @@
 
   /* Add to Cart stub — wired for later checkout functionality */
   const addBtn = document.getElementById('addToCart');
+  const celebration = document.getElementById('celebration');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  function triggerCelebration() {
+    if (!celebration) return;
+    celebration.style.display = 'flex';
+    if (!reduced.matches) {
+      for (let i = 0; i < 6; i++) {
+        const p = document.createElement('div');
+        p.className = 'celebration-paw';
+        p.textContent = '🐾';
+        p.style.left = (30 + Math.random() * 40) + '%';
+        p.style.fontSize = (16 + Math.random() * 20) + 'px';
+        p.style.opacity = 0.7 + Math.random() * 0.3;
+        celebration.appendChild(p);
+      }
+    }
+    setTimeout(() => {
+      celebration.style.display = 'none';
+      celebration.querySelectorAll('.celebration-paw').forEach(p => p.remove());
+    }, 2000);
+  }
+
   if (addBtn) {
     addBtn.addEventListener('click', () => {
       const original = addBtn.textContent;
       addBtn.textContent = 'Added';
       addBtn.style.background = 'var(--green)';
+      triggerCelebration();
       setTimeout(() => {
         addBtn.textContent = original;
       }, 1200);
+    });
+  }
+
+  /* Welcome overlay */
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const dismissWelcome = document.getElementById('dismissWelcome');
+  if (dismissWelcome && welcomeOverlay) {
+    dismissWelcome.addEventListener('click', () => {
+      welcomeOverlay.classList.add('hidden');
+    });
+  }
+
+  /* Puppy mascot tip */
+  const mascot = document.getElementById('puppyMascot');
+  const tip = document.getElementById('mascotTip');
+  if (mascot && tip) {
+    mascot.addEventListener('click', () => {
+      const expanded = mascot.getAttribute('aria-expanded') === 'true';
+      mascot.setAttribute('aria-expanded', String(!expanded));
+      tip.classList.toggle('show', !expanded);
     });
   }
 </script>
