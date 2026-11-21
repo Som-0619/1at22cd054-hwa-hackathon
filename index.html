@@ -465,8 +465,51 @@
   .remove-item:hover { color: var(--orange); }
   .cart-footer { padding: 24px; border-top: 1px solid var(--line); background: #fff; }
   .cart-total { display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800; color: var(--ink); font-family: 'Fraunces', serif; margin-bottom: 16px; }
-  .checkout-btn { width: 100%; background: var(--green); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; opacity: 0.6; pointer-events: none; }
+  .checkout-btn { width: 100%; background: var(--green); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .checkout-btn:hover { background: var(--orange); }
+  .checkout-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* Checkout modal */
+  .checkout-modal {
+    position: fixed; inset: 0; z-index: 400; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(49,86,64,0.45); backdrop-filter: blur(8px);
+  }
+  .checkout-modal.open { display: flex; }
+  .checkout-panel {
+    background: #fff; border-radius: 32px; border: 1px solid var(--line);
+    width: min(460px, 92vw); max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow); animation: slideIn 0.3s ease;
+  }
+  .checkout-header {
+    padding: 24px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .checkout-header h3 { margin: 0; font-size: 1.5rem; color: var(--green); font-family: 'Fraunces', serif; }
+  .close-checkout { background: none; border: none; font-size: 1.8rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .close-checkout:hover { color: var(--ink); }
+  .checkout-body { padding: 24px; }
+  .checkout-body h4 { font-size: 1rem; margin-bottom: 6px; color: var(--ink); font-family: 'Fraunces', serif; }
+  .checkout-summary { margin-bottom: 20px; padding: 16px; background: var(--cream); border-radius: 16px; border: 1px solid var(--line); }
+  .checkout-summary .line { display: flex; justify-content: space-between; font-size: 0.95rem; color: var(--ink); margin-bottom: 6px; }
+  .checkout-summary .line.total { font-weight: 800; font-size: 1.1rem; color: var(--green); border-top: 1px solid var(--line); padding-top: 10px; margin-top: 8px; font-family: 'Fraunces', serif; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 1rem; font-family: inherit; }
+  .form-group input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(49,86,64,0.12); }
+  .form-group input.error { border-color: #c0392b; }
+  .field-error { color: #c0392b; font-size: 0.8rem; margin-top: 4px; display: none; }
+  .form-group input.error ~ .field-error { display: block; }
+  .place-order-btn { width: 100%; background: var(--green); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 8px; }
+  .place-order-btn:hover { background: var(--orange); }
+  .place-order-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .order-success { text-align: center; padding: 24px; }
+  .order-success .success-puppy { font-size: 64px; margin-bottom: 12px; display: block; }
+  .order-success h3 { margin: 0 0 8px; color: var(--green); font-size: 1.5rem; font-family: 'Fraunces', serif; }
+  .order-success p { color: var(--muted); margin-bottom: 16px; font-size: 0.95rem; }
+  .order-id { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.1rem; color: var(--ink); background: var(--pastel); padding: 8px 14px; border-radius: 10px; display: inline-block; }
+  .order-error { background: #fdecea; border: 1px solid #f5c6c6; color: #c0392b; padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; font-size: 0.9rem; display: none; }
 
   @media (max-width: 899px) {
     .hero-grid { grid-template-columns: 1fr; }
@@ -699,7 +742,52 @@
         <span>Total</span>
         <span id="cartTotal">₹0.00</span>
       </div>
-      <button class="checkout-btn" id="checkoutBtn" disabled>Coming Soon — Checkout</button>
+      <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+    </div>
+  </div>
+</div>
+
+<div id="checkoutModal" class="checkout-modal">
+  <div class="checkout-panel">
+    <div class="checkout-header">
+      <h3>Checkout</h3>
+      <button class="close-checkout" id="closeCheckout" aria-label="Close checkout">&times;</button>
+    </div>
+    <div class="checkout-body">
+      <div id="checkoutError" class="order-error"></div>
+      <div id="checkoutForm">
+        <h4>Your Details</h4>
+        <div class="checkout-summary" id="checkoutSummary"></div>
+        <div class="form-group">
+          <label for="cName">Full Name</label>
+          <input type="text" id="cName" placeholder="e.g. Aarav Sharma" required>
+          <div class="field-error" id="errName">Please enter your name.</div>
+        </div>
+        <div class="form-group">
+          <label for="cEmail">Email Address</label>
+          <input type="email" id="cEmail" placeholder="e.g. aarav@example.com" required>
+          <div class="field-error" id="errEmail">Please enter a valid email.</div>
+        </div>
+        <div class="form-group">
+          <label for="cPhone">Phone Number</label>
+          <input type="tel" id="cPhone" placeholder="e.g. 9876543210" required>
+          <div class="field-error" id="errPhone">Please enter your phone number.</div>
+        </div>
+        <div class="form-group">
+          <label for="cAddress">Delivery Address</label>
+          <input type="text" id="cAddress" placeholder="e.g. 12, Garden Street, Mumbai" required>
+          <div class="field-error" id="errAddress">Please enter your delivery address.</div>
+        </div>
+        <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
+      </div>
+      <div id="checkoutSuccess" class="order-success" style="display:none;">
+        <span class="success-puppy">🐶</span>
+        <h3>Thank you, <span id="custName"></span>!</h3>
+        <p>Your order has been confirmed. Your SniffScape Starter Kit is on its way.</p>
+        <p><strong>Order ID:</strong> <span id="orderIdDisplay"></span></p>
+        <div class="order-id">#<span id="orderIdBig"></span></div>
+        <p style="margin-top:16px;font-size:0.85rem;color:var(--muted);">We'll email your order confirmation shortly.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -906,6 +994,131 @@
       if (dec) { changeQty(dec.dataset.id, -1); }
       else if (inc) { changeQty(inc.dataset.id, 1); }
       else if (rem) { removeItem(rem.dataset.id); }
+    });
+  }
+
+  /* Checkout modal */
+  const checkoutModal = document.getElementById('checkoutModal');
+  const closeCheckout = document.getElementById('closeCheckout');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  const checkoutForm = document.getElementById('checkoutForm');
+  const checkoutSuccess = document.getElementById('checkoutSuccess');
+  const checkoutError = document.getElementById('checkoutError');
+  const placeOrderBtn = document.getElementById('placeOrderBtn');
+  const checkoutSummary = document.getElementById('checkoutSummary');
+
+  function openCheckout() {
+    if (!checkoutModal || !cart.length) return;
+    buildCheckoutSummary();
+    checkoutError.style.display = 'none';
+    checkoutForm.style.display = 'block';
+    checkoutSuccess.style.display = 'none';
+    checkoutModal.classList.add('open');
+  }
+
+  function closeCheckoutModal() {
+    if (!checkoutModal) return;
+    checkoutModal.classList.remove('open');
+  }
+
+  function buildCheckoutSummary() {
+    if (!checkoutSummary) return;
+    let total = 0;
+    let html = '';
+    cart.forEach(item => {
+      const lineTotal = item.price * item.qty;
+      total += lineTotal;
+      html += `<div class="line"><span>${item.name} × ${item.qty}</span><span>${formatINR(lineTotal)}</span></div>`;
+    });
+    html += `<div class="line total"><span>Total</span><span>${formatINR(total)}</span></div>`;
+    checkoutSummary.innerHTML = html;
+  }
+
+  function showFieldError(inputId, errorId, message) {
+    const input = document.getElementById(inputId);
+    const err = document.getElementById(errorId);
+    if (input) input.classList.add('error');
+    if (err) { err.textContent = message; err.style.display = 'block'; }
+  }
+
+  function clearFieldError(inputId, errorId) {
+    const input = document.getElementById(inputId);
+    const err = document.getElementById(errorId);
+    if (input) input.classList.remove('error');
+    if (err) err.style.display = 'none';
+  }
+
+  function clearAllErrors() {
+    ['cName','cEmail','cPhone','cAddress'].forEach((id, i) => {
+      clearFieldError(id, ['errName','errEmail','errPhone','errAddress'][i]);
+    });
+    if (checkoutError) checkoutError.style.display = 'none';
+  }
+
+  if (checkoutBtn) checkoutBtn.addEventListener('click', openCheckout);
+  if (closeCheckout) closeCheckout.addEventListener('click', closeCheckoutModal);
+  if (checkoutModal) {
+    checkoutModal.addEventListener('click', (e) => {
+      if (e.target === checkoutModal) closeCheckoutModal();
+    });
+  }
+
+  ['cName','cEmail','cPhone','cAddress'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => clearFieldError(id, ['errName','errEmail','errPhone','errAddress'][i]));
+  });
+
+  if (placeOrderBtn) {
+    placeOrderBtn.addEventListener('click', async () => {
+      clearAllErrors();
+      const name = document.getElementById('cName').value.trim();
+      const email = document.getElementById('cEmail').value.trim();
+      const phone = document.getElementById('cPhone').value.trim();
+      const address = document.getElementById('cAddress').value.trim();
+
+      let valid = true;
+      if (!name) { showFieldError('cName','errName','Please enter your name.'); valid = false; }
+      if (!email) { showFieldError('cEmail','errEmail','Please enter your email address.'); valid = false; }
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showFieldError('cEmail','errEmail','Please enter a valid email address.'); valid = false; }
+      if (!phone) { showFieldError('cPhone','errPhone','Please enter your phone number.'); valid = false; }
+      if (!address) { showFieldError('cAddress','errAddress','Please enter your delivery address.'); valid = false; }
+      if (!valid) return;
+
+      placeOrderBtn.disabled = true;
+      placeOrderBtn.textContent = 'Placing order…';
+
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name, email, phone, address,
+            items: cart.map(i => ({ id: i.id, qty: i.qty }))
+          })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to place order. Please try again.');
+        }
+
+        placeOrderBtn.textContent = 'Order placed!';
+        checkoutForm.style.display = 'none';
+        checkoutSuccess.style.display = 'block';
+        document.getElementById('custName').textContent = name;
+        document.getElementById('orderIdDisplay').textContent = data.orderId;
+        document.getElementById('orderIdBig').textContent = data.orderId;
+
+        cart = [];
+        saveCart();
+        updateCartCount();
+        if (cartDrawer && cartDrawer.classList.contains('open')) renderCart();
+      } catch (err) {
+        checkoutError.textContent = err.message || 'Something went wrong. Please try again.';
+        checkoutError.style.display = 'block';
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.textContent = 'Place Order';
+      }
     });
   }
 
