@@ -158,41 +158,45 @@
   .hero-actions { display: flex; gap: 14px; }
   .hero-visual {
     position: relative;
-    height: 520px;
+    height: 560px;
     border-radius: 32px;
     background: var(--pastel);
     overflow: hidden;
+    border: 1px solid var(--line);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--line);
   }
-  .hero-visual .mat {
-    position: absolute;
-    width: 260px; height: 220px;
+  .hero-mat {
+    position: relative;
+    width: 320px;
+    height: 270px;
     background: #C7D8AE;
-    border-radius: 14px;
-    border: 6px solid var(--green);
-    opacity: 0.9;
-    transform: rotate(-6deg);
+    border-radius: 20px;
+    border: 8px solid var(--green);
+    box-shadow: var(--shadow);
+    transform: rotate(-3deg);
+    animation: float 5s ease-in-out infinite;
   }
-  .hero-visual .dog {
+  .station {
     position: absolute;
-    bottom: 28px; right: 40px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--orange);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .hero-dog {
+    position: absolute;
+    bottom: 14px;
+    right: 12px;
     font-size: 150px;
-    filter: drop-shadow(0 12px 18px rgba(0,0,0,0.12));
-    animation: float 4s ease-in-out infinite;
-  }
-  .hero-visual .sniff {
-    position: absolute;
-    top: 40px; left: 48px;
-    font-size: 130px;
-    opacity: 0.55;
-    animation: bounce 3s ease-in-out infinite;
+    filter: drop-shadow(0 14px 20px rgba(0,0,0,0.15));
+    animation: sniff 3s ease-in-out infinite;
   }
   .hero-visual .badge {
     position: absolute;
-    bottom: 34px; left: 40px;
+    bottom: 30px; left: 30px;
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 12px;
@@ -202,6 +206,7 @@
     color: var(--green);
     box-shadow: var(--shadow);
   }
+  @keyframes sniff { 0%,100%{transform:scale(1) rotate(0deg)} 50%{transform:scale(1.03) rotate(-2deg)} }
   .paw-prints { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   .paw {
     position: absolute;
@@ -277,10 +282,38 @@
     display: flex; flex-direction: column;
   }
   .product-thumb {
-    height: 260px; background: var(--pastel); border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center;
+    height: 300px;
+    background: var(--pastel);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
   }
-  .product-thumb::after { content: "🧩"; font-size: 96px; opacity: 0.5; }
+  .product-mat {
+    position: relative;
+    width: 220px;
+    height: 180px;
+    background: #C7D8AE;
+    border-radius: 16px;
+    border: 6px solid var(--green);
+    box-shadow: 0 8px 20px -6px rgba(49,86,64,0.2);
+  }
+  .product-station {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--orange);
+  }
+  .product-dog {
+    position: absolute;
+    bottom: -14px;
+    right: -8px;
+    font-size: 110px;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,0.12));
+  }
   .product-info { padding: 20px 20px 26px; flex: 1; display: flex; flex-direction: column; }
   .product h3 { font-size: 1.15rem; margin-bottom: 6px; color: var(--green); }
   .product p { color: var(--muted); font-size: 0.95rem; margin-bottom: 14px; line-height: 1.6; }
@@ -365,9 +398,15 @@
       </div>
     </div>
     <div class="hero-visual reveal" style="transition-delay:0.15s">
-      <div class="mat"></div>
-      <div class="sniff">👃</div>
-      <div class="dog">🐶</div>
+      <div class="hero-mat">
+        <div class="station" style="top:26px;left:34px;"></div>
+        <div class="station" style="top:34px;right:40px;"></div>
+        <div class="station" style="bottom:36px;left:44px;"></div>
+        <div class="station" style="bottom:28px;right:50px;"></div>
+        <div class="station" style="top:100px;left:120px;"></div>
+        <div class="station" style="top:150px;right:70px;"></div>
+      </div>
+      <div class="hero-dog">🐶</div>
       <div class="badge">₹999 Starter Kit</div>
     </div>
   </div>
@@ -452,15 +491,24 @@
     <h2 class="section-title">The Kit</h2>
     <p class="section-sub">Everything you need to start scent play at home.</p>
     <div class="shop-grid">
-      <div class="product reveal">
-        <div class="product-thumb"></div>
-        <div class="product-info">
-          <h3>SniffScape Starter Kit</h3>
-          <p>Six modular scent-puzzle stations on a wipe-clean base.</p>
-          <div class="product-price">₹999</div>
-          <button class="btn">Coming Soon</button>
+    <div class="product reveal">
+      <div class="product-thumb">
+        <div class="product-mat">
+          <div class="product-station" style="top:18px;left:22px;"></div>
+          <div class="product-station" style="top:26px;right:26px;"></div>
+          <div class="product-station" style="bottom:28px;left:30px;"></div>
+          <div class="product-station" style="bottom:20px;right:34px;"></div>
+          <div class="product-station" style="top:82px;left:86px;"></div>
         </div>
+        <div class="product-dog">🐶</div>
       </div>
+      <div class="product-info">
+        <h3>SniffScape Starter Kit</h3>
+        <p>Six modular scent-puzzle stations on a wipe-clean base.</p>
+        <div class="product-price">₹999</div>
+        <button class="btn" id="addToCart">Add to Cart</button>
+      </div>
+    </div>
     </div>
   </div>
 </section>
@@ -536,6 +584,19 @@
     });
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  /* Add to Cart stub — wired for later checkout functionality */
+  const addBtn = document.getElementById('addToCart');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      const original = addBtn.textContent;
+      addBtn.textContent = 'Added';
+      addBtn.style.background = 'var(--green)';
+      setTimeout(() => {
+        addBtn.textContent = original;
+      }, 1200);
+    });
+  }
 </script>
 
 </body>
